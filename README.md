@@ -32,11 +32,13 @@ BRIGHT_DATA_API_KEY="your-key" python3 tool.py --live "insulated water bottle" n
 python3 -m unittest -v
 ```
 
-One bounded query produces one live dataset scrape request; this may incur charges. Larger batch monitoring is out of scope. The adapter handles merchant labels by matching product URL domains, and accepts an actual merchant domain where supplied. The programmatic function `summarize_visibility` supports offline records.
+One bounded query produces one live dataset scrape request; this may incur charges. Larger batch monitoring is out of scope. Merchant inputs are normalized as URL hostnames (ports, paths, and queries are ignored). A result matches the target when its host is exactly the target domain or a subdomain ending in `.` plus the target; unrelated suffixes do not match. When the merchant field is a human-readable label rather than a domain/URL, matching falls back to the product URL host. The programmatic function `summarize_visibility` supports offline records. Requests are not automatically retried because repeating a billable POST may duplicate usage.
 
 ## Outputs
 
 JSON contains distinct query count, query count with a merchant result, observed presence rate, best observed rank by query, matched product URLs/titles, and explicit limitations. Missing ranks remain null; no rank is imputed.
+
+On live HTTP/network/API failure, the CLI writes a JSON object to stderr with an `error` containing a stable `code`, sanitized `message`, and `retryable: false`, then exits 1. Success JSON remains on stdout. No automatic retry is made.
 
 ## Differentiation
 
