@@ -27,6 +27,15 @@ class ShoppingPromoAuditTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             summarize_visibility([], "bad domain")
 
+    def test_url_inputs_normalize_host_strip_port_and_require_exact_or_subdomain_match(self):
+        rows = [
+            {"query": "x", "merchant": "https://www.shop.example:8443/path?q=1", "position": 2},
+            {"query": "y", "product_url": "https://sub.shop.example/product", "position": 3},
+            {"query": "z", "product_url": "https://notshop.example/product", "position": 1},
+        ]
+        result = summarize_visibility(rows, "https://shop.example:443/?campaign=1")
+        self.assertEqual(result["queries_with_merchant"], 2)
+
     def test_live_collection_uses_documented_shopping_dataset_and_url_input(self):
         from tool import collect_shopping
         response = BytesIO(b'[]')

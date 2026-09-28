@@ -2,7 +2,7 @@
 import json
 import os
 import sys
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 from urllib.request import Request, urlopen
 
 SHOPPING_DATASET_ID = "gd_m31f2k0d2m1bah4f3b"
@@ -10,10 +10,9 @@ SHOPPING_DATASET_ID = "gd_m31f2k0d2m1bah4f3b"
 
 def _domain(value):
     value = value.strip().lower()
-    if "://" in value:
-        from urllib.parse import urlparse
-        value = urlparse(value).hostname or ""
-    value = value.removeprefix("www.").split("/")[0]
+    if "://" not in value:
+        value = "//" + value
+    value = (urlparse(value).hostname or "").removeprefix("www.").rstrip(".")
     if not value or " " in value or "." not in value:
         raise ValueError("Provide a merchant domain such as shop.example")
     return value
@@ -28,7 +27,8 @@ def summarize_visibility(rows, merchant_domain):
         merchant = row.get("merchant") or ""
         candidate = merchant if "://" in merchant or "." in merchant else row.get("product_url") or ""
         try:
-            return _domain(candidate) == target
+            host = _domain(candidate)
+            return host == target or host.endswith("." + target)
         except ValueError:
             return False
 
