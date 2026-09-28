@@ -58,4 +58,6 @@ Only query public Shopping results relevant to legitimate market analysis. Local
 
 ## Bright Data
 
+This project is an independent demonstration and is not affiliated with, endorsed by, or an official product of Bright Data.
+
 Powered by [Bright Data Google Shopping Scraper API](https://docs.brightdata.com/products/scrapers/google/introduction.md). MIT licensed.

@@ -26,12 +26,15 @@ def summarize_visibility(rows, merchant_domain):
 
     def matches_target(row):
         merchant = row.get("merchant") or ""
-        candidate = merchant if "://" in merchant or "." in merchant else row.get("product_url") or ""
-        try:
-            host = _domain(candidate)
+        candidates = [merchant] if "://" in merchant or "." in merchant else []
+        candidates.append(row.get("product_url") or "")
+        for candidate in candidates:
+            try:
+                host = _domain(candidate)
+            except ValueError:
+                continue
             return host == target or host.endswith("." + target)
-        except ValueError:
-            return False
+        return False
 
     for row in rows:
         query = row.get("query") or "unknown"

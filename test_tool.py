@@ -36,6 +36,17 @@ class ShoppingPromoAuditTests(unittest.TestCase):
         result = summarize_visibility(rows, "https://shop.example:443/?campaign=1")
         self.assertEqual(result["queries_with_merchant"], 2)
 
+    def test_invalid_dotted_merchant_label_falls_back_to_product_url(self):
+        rows = [{
+            "query": "desk lamp",
+            "merchant": "Shop.Example Store",
+            "product_url": "https://shop.example/lamp",
+            "position": 4,
+        }]
+        result = summarize_visibility(rows, "shop.example")
+        self.assertEqual(result["queries_with_merchant"], 1)
+        self.assertEqual(result["best_rank_by_query"]["desk lamp"], 4)
+
     def test_live_collection_uses_documented_shopping_dataset_and_url_input(self):
         from tool import collect_shopping
         response = BytesIO(b'[]')
