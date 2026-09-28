@@ -1,0 +1,5 @@
+[
+  {"query": "insulated water bottle", "position": 3, "title": "Northstar Bottle", "merchant": "Northstar Store", "product_url": "https://northstar.example/bottle"},
+  {"query": "insulated water bottle", "position": 1, "title": "Trail Bottle", "merchant": "Other Shop", "product_url": "https://other.example/bottle"},
+  {"query": "leakproof hiking bottle", "position": 5, "title": "Northstar Bottle", "merchant": "Northstar Store", "product_url": "https://northstar.example/bottle"}
+]
