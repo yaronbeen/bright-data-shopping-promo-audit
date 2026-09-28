@@ -45,6 +45,21 @@ class ShoppingPromoAuditTests(unittest.TestCase):
         self.assertIn("dataset_id=gd_m31f2k0d2m1bah4f3b", request.full_url)
         self.assertIn(b"tbm=shop", request.data)
 
+    def test_live_cli_errors_are_structured_nonretryable_and_secret_safe(self):
+        import json
+        import os
+        from contextlib import redirect_stderr
+        from io import StringIO
+        from urllib.error import URLError
+        from tool import main
+        with patch("tool.collect_shopping", side_effect=URLError("secret-token")), patch.dict(os.environ, {"BRIGHT_DATA_API_KEY": "secret-token"}), patch("sys.argv", ["tool.py", "--live", "query", "shop.example"]), redirect_stderr(StringIO()) as error:
+            with self.assertRaises(SystemExit) as exit_error:
+                main()
+        payload = json.loads(error.getvalue())
+        self.assertEqual(exit_error.exception.code, 1)
+        self.assertFalse(payload["error"]["retryable"])
+        self.assertNotIn("secret-token", error.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

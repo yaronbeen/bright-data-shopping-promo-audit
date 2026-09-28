@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote_plus, urlparse
 from urllib.request import Request, urlopen
 
@@ -67,13 +68,22 @@ def collect_shopping(query, api_key):
         return json.load(response)
 
 
+def emit_cli_error(error):
+    status = error.code if isinstance(error, HTTPError) else None
+    print(json.dumps({"error": {"code": "http_error" if status else "network_error", "message": f"Shopping collection failed{f' with HTTP {status}' if status else ''}; no automatic retry was attempted.", "retryable": False}}), file=sys.stderr)
+    raise SystemExit(1)
+
+
 def main():
     if len(sys.argv) < 2:
         raise SystemExit("Usage: python3 tool.py SAMPLE.json MERCHANT_DOMAIN | --live QUERY MERCHANT_DOMAIN")
     if sys.argv[1] == "--live":
         if len(sys.argv) != 4 or not os.getenv("BRIGHT_DATA_API_KEY"):
             raise SystemExit("Set BRIGHT_DATA_API_KEY and provide a query plus merchant domain")
-        rows = collect_shopping(sys.argv[2], os.environ["BRIGHT_DATA_API_KEY"])
+        try:
+            rows = collect_shopping(sys.argv[2], os.environ["BRIGHT_DATA_API_KEY"])
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError, RuntimeError) as error:
+            emit_cli_error(error)
         result = summarize_visibility(rows, sys.argv[3])
     else:
         with open(sys.argv[1], encoding="utf-8") as source:
